@@ -1,7 +1,7 @@
 import json
-from typing import List, Dict
 from datetime import datetime
-
+from typing import List, Dict
+import os
 
 class Leaderboard:
     def __init__(self, filename: str):
@@ -10,16 +10,25 @@ class Leaderboard:
 
     def load(self) -> List[Dict]:
         """Load leaderboard data from the JSON file."""
+        if not os.path.exists(self.filename):
+            return []  # Return empty list if the file doesn't exist
+
         try:
             with open(self.filename, 'r') as file:
                 return json.load(file)
-        except (FileNotFoundError, json.JSONDecodeError):
-            return []  # Return empty list if file doesn't exist or is invalid
+        except (json.JSONDecodeError, IOError):
+            return []  # Return empty list if JSON is invalid or another IOError occurs
 
     def save(self):
         """Save leaderboard data to the JSON file."""
-        with open(self.filename, 'a') as file:
+        # Use a temporary file to avoid overwriting until successful
+        temp_filename = self.filename + '.tmp'
+
+        with open(temp_filename, 'w') as file:
             json.dump(self.leaderboard_data, file, indent=4)
+
+        # Only replace the original file if the temporary file was created successfully
+        os.replace(temp_filename, self.filename)
 
     def add_entry(self, user: str, feathers: int, level: int, fact_type: str):
         """Add a new entry to the leaderboard."""
