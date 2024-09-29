@@ -1,0 +1,12 @@
+egghunt_leaders.json
+*.egg-info
+
+# Ignore Python cache directories
+__pycache__/
+
+# Ignore compiled Python files
+*.pyc
+*.pyo
+
+# Ignore virtual environment directories
+tutorenv/
