@@ -27,3 +27,6 @@ Install editable package
 
 Run egghunt command line interface (cli) game
 `egghunt`
+
+Or review facts:
+`review_facts`

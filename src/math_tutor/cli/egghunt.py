@@ -82,4 +82,4 @@ def main():
     leaderboard.display_personal_bests(user)
 
 if __name__ == "__main__":
-        main()
+    main()

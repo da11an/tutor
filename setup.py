@@ -7,7 +7,8 @@ setup(
     package_dir={'': 'src'},
     entry_points={
         'console_scripts': [
-            'egghunt=math_tutor.cli.egghunt:main'
+            'egghunt=math_tutor.cli.egghunt:main',
+            'reviewfacts=math_tutor.cli.review_factfamily:review_fact_family'
         ],
     },
     description='A package to help anyone learn math facts',
