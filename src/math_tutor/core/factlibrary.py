@@ -1,5 +1,6 @@
 from typing import List
 from random import sample
+from copy import deepcopy
 from math_tutor.core.mathfacts import AdditionFact, SubtractionFact, MultiplicationFact, DivisionFact
 from math_tutor.core.factfamily import AdditionFactFamily, SubtractionFactFamily, MultiplicationFactFamily, DivisionFactFamily
 
@@ -18,8 +19,25 @@ class FactLibrary:
     def fact_family(self, family):
         return self.fact_library[family] if family in self.fact_library else None
 
-    def sample(self, k):
-        return [self.fact_family(family) for family in sample(list(self.fact_library.keys()), k)]
+    @property
+    def len(self):
+        return len(self.fact_library)
+
+    def sample(self, k: int) -> 'FactLibrary':
+        """
+        Sample k fact families from the fact library to form a new library.
+        
+        Returns:
+            A fact library sampled from the original instance.
+        """
+        k = min(k, self.len)
+        new_instance = deepcopy(self)
+        new_instance.fact_library = [self.fact_family(family) for family in sample(list(self.fact_library.keys()), k)]
+        return new_instance
+
+    def sort_by_length(self):
+        """Sort the fact_library by the len property of fact_family."""
+        self.fact_library.sort(key=lambda family: family.len)
 
     @property
     def catalog(self):

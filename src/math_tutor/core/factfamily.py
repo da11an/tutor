@@ -1,5 +1,6 @@
 from typing import List
 from random import sample, shuffle
+from copy import deepcopy
 from math_tutor.core.mathfacts import (
         MathFact,
         AdditionFact,
@@ -21,6 +22,10 @@ class FactFamily:
         if not self._facts:
             self._facts = self.generate_facts()  # Generate facts if not already populated
         return self._facts
+
+    @property
+    def len(self) -> int:
+        return len(self._facts)
 
     def generate_facts(self) -> List:
         """
@@ -44,9 +49,15 @@ class FactFamily:
         """Append a single AdditionFact to the facts list."""
         self._facts.append(fact)
 
-    def sample(self, k):
+    def sample(self, k) -> 'FactFamily':
         k = min(k, self.len)
-        self._facts = sample(self._facts, k)
+        new_instance = deepcopy(self)
+        new_instance._facts = sample(self._facts, k)
+        return new_instance
+
+    def sample_fact(self, k) -> 'MathFact':
+        return sample(self._facts, 1)[0]
+
 
     def shuffle(self):
         shuffle(self._facts)
@@ -62,6 +73,9 @@ class FactFamily:
     @property
     def len(self) -> int:
         return len(self.facts)
+    
+    def quiz(self, count=1, shuffle=False):
+        pass
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(answer={self.value}, max_operand={self.max_operand}, min_operand={self.min_operand}, facts={self.facts})"

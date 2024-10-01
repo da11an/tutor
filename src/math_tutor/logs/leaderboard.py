@@ -3,6 +3,13 @@ from datetime import datetime
 from typing import List, Dict
 import os
 
+def main(user=None):
+    leaderboard = Leaderboard('egghunt_leaders.json')
+    leaderboard.display_all_time_leaders()
+    if user is None:
+        user = input("Enter a user name for personal bests: ")
+    leaderboard.display_personal_bests_by_fact_type(user)
+
 class Leaderboard:
     def __init__(self, filename: str):
         self.filename = filename
@@ -128,3 +135,40 @@ class Leaderboard:
                 print(f"{entry['user']:<15} {entry['feathers']:<10} {entry['level']:<10} {entry.get('fact_type', 'N/A'):<20} {entry.get('timestamp', 'N/A'):<25}")
         else:
             print(f"\nNo entries found for {user}.")
+
+    def get_personal_bests_by_fact_type(self, user: str) -> Dict[str, Dict]:
+        """Return personal bests for the specified user, grouped by fact type."""
+        personal_bests = {}
+
+        # Filter entries for the specified user
+        user_entries = [entry for entry in self.leaderboard_data if entry['user'] == user]
+
+        # Find personal bests for each fact type
+        for entry in user_entries:
+            fact_type = entry.get('fact_type', 'N/A')
+            if fact_type not in personal_bests:
+                personal_bests[fact_type] = entry
+            else:
+                # Compare and keep the entry with the higher feathers
+                if entry['feathers'] > personal_bests[fact_type]['feathers']:
+                    personal_bests[fact_type] = entry
+
+        return personal_bests
+
+    def display_personal_bests_by_fact_type(self, user: str):
+        """Display personal bests for the specified user by fact type in a user-friendly format."""
+        personal_bests = self.get_personal_bests_by_fact_type(user)
+
+        if personal_bests:
+            print(f"\nPersonal Bests for {user} by Fact Type:")
+            print(f"{'Fact Type':<20} {'Feathers':<10} {'Level':<10} {'Timestamp':<25}")
+            print("-" * 70)
+
+            for fact_type, entry in personal_bests.items():
+                print(f"{fact_type:<20} {entry['feathers']:<10} {entry['level']:<10} {entry.get('timestamp', 'N/A'):<25}")
+        else:
+            print(f"\nNo entries found for {user}.")
+
+
+if __name__ == "__main__":
+    main()

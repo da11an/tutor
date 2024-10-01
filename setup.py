@@ -8,6 +8,7 @@ setup(
     entry_points={
         'console_scripts': [
             'egghunt=math_tutor.cli.egghunt:main',
+            'egghunt_leaders=math_tutor.logs.leaderboard:main',
             'reviewfacts=math_tutor.cli.review_factfamily:review_fact_family'
         ],
     },

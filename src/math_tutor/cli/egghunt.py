@@ -27,59 +27,38 @@ def main():
     max_operand = int(input(f"How high would you like to practice your {fact_type} tables? "))
     min_operands = {'addition (+)': 1, 'subtraction (-)': 1, 'multiplication (x)': 2, 'division (/)': 2}
     min_operand = min_operands[fact_type]
-
-    fact_library = fact_library_class(min_operand, max_operand)
-
-    def get_bag_and_egg(fact_library: FactLibrary):
-        fact_families = deepcopy(fact_library.sample(2))
-        if any([fact_family.len > 1 for fact_family in fact_families]):
-            if fact_families[0].len >= fact_families[1].len:
-                bag = fact_families[0]
-                bag.sample(4)
-                fact_families[1].sample(1)
-                bad_egg = fact_families[1].facts[0]
-            else:
-                bag = fact_families[1]
-                bag.sample(4)
-                fact_families[0].sample(1)
-                bad_egg = fact_families[0].facts[0]
-        else:
-            return get_bag_and_egg(fact_library)
-        return bag, bad_egg
-
     points = []
+    fact_library = fact_library_class(min_operand, max_operand)
     for i in range(10):
-        input(f"\n-- Press ENTER to inspect 'bag' {i+1}/10 for the statement that doesn't belong. [Feather count: {round(sum(points))}]--\n")
-        bag, bad_egg = get_bag_and_egg(fact_library)
+        j = 0
+        while True:
+            j += 1
+            sampled_library = fact_library.sample(2)
+            sampled_library.sort_by_length()
+            if sampled_library.fact_library[-1].len > 1:
+                break
+            elif j > 1000:
+                raise ValueError("Sampled library doesn't contain a fact family with more than one fact. Please increase your max operand.")
+        bag = sampled_library.fact_library[-1].sample(4)
+        bad_egg = sampled_library.fact_library[0].sample_fact(1)
         bag.append(bad_egg)
         bag.shuffle()
 
-        # Start the timer
-        start_time = time.time()
-        
+        input(f"\n-- Press ENTER to inspect 'bag' {i+1}/10 -- Feathers: {round(sum(points))} --\n")
         bag.print_problems
-        answer = input("\n    Solution: ")
+        print("")
+        bad_egg.quiz(show_problem=False)
 
-        # End the timer
-        end_time = time.time()
-
-        try:
-            grade = bad_egg.check_input(int(answer))
-        except:
-            grade = False
-
-        # Calculate the time taken
-        elapsed_time = end_time - start_time
-
-        feathers = grade + grade / elapsed_time * bag.len * max_operand
+        p = bad_egg.performance
+        feathers = p.correct + p.correct / p.timing * bag.len * max_operand
 
         points.append(feathers)
-        print(f"\n    Good!" if grade else f"\n    Actually, {bad_egg.problem} = {bad_egg.answer}.")
+        print(f"\n    Good!" if p.correct else f"\n    Actually, {bad_egg.problem} = {bad_egg.answer}.")
     print(f"\nYou earned {round(sum(points))} feathers! Excellent! Feathers were awarded based on correctness, complexity, and speed.")
     leaderboard.add_entry(user, round(sum(points)), max_operand, fact_type)
     leaderboard.display_leaderboard()
     leaderboard.display_all_time_leaders()
-    leaderboard.display_personal_bests(user)
+    leaderboard.display_personal_bests_by_fact_type(user)
 
 if __name__ == "__main__":
     main()
