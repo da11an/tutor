@@ -3,28 +3,37 @@ from random import sample, shuffle
 from copy import deepcopy
 from math_tutor.core.factlibrary import FactLibrary, MultiplicationFactLibrary, AdditionFactLibrary, SubtractionFactLibrary, DivisionFactLibrary
 from math_tutor.logs.leaderboard import Leaderboard
-from math_tutor.cli.utils import get_user_choice
+from math_tutor.cli.utils import UserChoiceList, UserChoiceDict 
 
 leaderboard = Leaderboard("egghunt_leaders.json")
 
 def main():
     print("Hi! My name is Diddio! Let's hunt for hidden easter eggs.")
 
-    user = input("\nWhat's your name? ").title()
+    print("\nWhat's your name?")
+    user = UserChoiceList(leaderboard.users + ['New User!']).get_choice()
+    if user == 'New User!':
+        user = input("\nWhat's your name? ").title()
 
+    streak, active = leaderboard.streak(user)
+    print(f"\nYour latest streak is {streak} days {'and is active!' if active else 'but is inactive.'}")
+
+    print("\nWhat kind of math facts?")
     fact_library_choices = {
             'addition (+)': AdditionFactLibrary,
             'subtraction (-)': SubtractionFactLibrary,
             'multiplication (x)': MultiplicationFactLibrary,
             'division (/)': DivisionFactLibrary
         }
-    fact_type, fact_library_class = get_user_choice(fact_library_choices)
+    fact_type, fact_library_class = UserChoiceDict(fact_library_choices).get_choice()
+
+    print("")
+    max_operand = min(1000, int(input(f"How high would you like to practice your {fact_type} tables? ")))
+
     print(f"\nHi {user}! Here's how it works. I have bags of {fact_type} problems.")
     print("(Don't you?!) Each bag should only have matching problems that are equal.")
     print("But I accidentally dropped in an extra problem that doesn't match.")
     print("Your job is to find the one that doesn't belong and tell me what it equals.")
-    print("------------------------------------------------------------------------------\n")
-    max_operand = int(input(f"How high would you like to practice your {fact_type} tables? "))
     min_operands = {'addition (+)': 1, 'subtraction (-)': 1, 'multiplication (x)': 2, 'division (/)': 2}
     min_operand = min_operands[fact_type]
     points = []
@@ -53,12 +62,16 @@ def main():
         feathers = p.correct + p.correct / p.timing * bag.len * max_operand
 
         points.append(feathers)
-        print(f"\n    Good!" if p.correct else f"\n    Actually, {bad_egg.problem} = {bad_egg.answer}.")
+        if p.correct:
+            print(f"\n    Good!")
+        else:
+            print(f"\n    No: {bad_egg.problem} = {bad_egg.answer}")
+            time.sleep(3)
+
+
     print(f"\nYou earned {round(sum(points))} feathers! Excellent! Feathers were awarded based on correctness, complexity, and speed.")
     leaderboard.add_entry(user, round(sum(points)), max_operand, fact_type)
-    leaderboard.display_leaderboard()
-    leaderboard.display_all_time_leaders()
-    leaderboard.display_personal_bests_by_fact_type(user)
+    leaderboard.main(user)
 
 if __name__ == "__main__":
     main()
