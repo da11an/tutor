@@ -41,6 +41,32 @@ class UserChoiceBase:
         raise NotImplementedError("Subclasses should implement this method.")
 
 
+class UserChoiceIntRange:
+    def __init__(self, min_value: int, max_value: int, prompt: str=None):
+        assert isinstance(min_value, int), "Must provide an integer minimum value"
+        assert isinstance(max_value, int), "Must provide an integer maximum value"
+        self.min_value = min_value
+        self.max_value = max_value
+        if prompt is None:
+            self.prompt = f"Select an integer between {self.min_value} and {self.max_value}"
+        else:
+            self.prompt = prompt
+    
+    def get_choice(self) -> Tuple[str, Union[str, None]]:
+        """Get the user's choice from the options."""
+        
+        # Get user input and validate
+        while True:
+            try:
+                choice = int(input(f"{self.prompt}: "))
+                if self.min_value <= choice <= self.max_value:
+                    return choice
+                else:
+                    print(f"  Please enter a number between {self.min_value} and {self.max_value}.")
+            except ValueError:
+                print(f"  Invalid input. Please enter a number between {self.min_value} and {self.max_value}.")
+    
+
 class UserChoiceDict(UserChoiceBase):
     def get_displayable_options(self) -> List[str]:
         """Return the keys of the dictionary for display."""

@@ -3,12 +3,11 @@ import random
 from math_tutor.utils import timeit_decorator
 from typing import NamedTuple
 from statistics import mean
+from math_tutor.logs.historian import Historian
+from math_tutor.data import Performance
 
-class Performance(NamedTuple):
-    correct: Union[bool, float]
-    timing: float
-    answer: Union[int, list[int]]
 
+history = Historian('history.json')
 
 class MathFact:
     def __init__(self, a: int, b: int):
@@ -17,11 +16,24 @@ class MathFact:
         self.symbol = None
         self.ans_name = None
         self.answer = None
-        self.history = []
+        self.session_history = []
+        self.quiz_logging = True
+
+    @classmethod
+    def from_problem(cls, problem):
+        a, symbol, b = problem.split()
+        fact_class_options = {
+            '+': AdditionFact,
+            '-': SubtractionFact,
+            'x': MultiplicationFact,
+            '/': DivisionFact
+        }
+        fact_class = fact_class_options.get(symbol, MathFact)
+        return fact_class(int(a), int(b))
 
     def generate(self) -> Tuple[int, int, int]:
         """
-        Generate the addition fact.
+        Generate the fact.
         """
         return self.a, self.b, self.answer
 
@@ -42,7 +54,7 @@ class MathFact:
     def get_answer(self, show_problem=True) -> int:
         while True:
             if show_problem:
-                user_input = input(f"{self.problem} = ")
+                user_input = input(f"    {self.problem} = ")
             else:
                 user_input = input(f"    Answer: ")
             if user_input.strip() == "":  # Check for empty input
@@ -53,21 +65,26 @@ class MathFact:
             except ValueError:
                 print("Invalid input. Please enter a valid integer.")
 
-    def quiz(self, show_problem=True):
+    def quiz(self, show_problem=True, user=None):
         answer, timing = self.get_answer(show_problem)
-        self.history.append(Performance(self.check_input(answer), timing, answer))
+        perf = Performance(self.check_input(answer), timing, answer, self.problem, user)
+        if self.quiz_logging:
+            history.add_entry(perf)
+        self.session_history.append(perf)
 
     @property
     def performance(self) -> Performance[NamedTuple]:
-        if len(self.history) > 1:
-            mean_timing = mean(result.timing for result in self.history)
-            mean_correctness = mean(map(int, (result.correct for result in self.history)))
-            answers = [result.answer for result in self.history]
-            return Performance(mean_correctness, mean_timing, answers)
-        elif len(self.history) == 0:
+        if len(self.session_history) > 1:
+            mean_timing = mean(result.timing for result in self.session_history)
+            mean_correctness = mean(map(int, (result.correct for result in self.session_history)))
+            answers = [result.answer for result in self.session_history]
+            problem = [result.problem for result in self.session_history][0]
+            user = [result.user for result in self.session_history][0]
+            return Performance(mean_correctness, mean_timing, answers, problem, user)
+        elif len(self.session_history) == 0:
             return None
         else:
-            return self.history[-1]
+            return self.session_history[-1]
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(a={self.a}, b={self.b}, {self.ans_name}={self.answer})"

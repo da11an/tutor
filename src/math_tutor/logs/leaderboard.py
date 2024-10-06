@@ -64,7 +64,16 @@ class Leaderboard:
 
     def display_streak(self, user: str):
         streak, active = self.streak(user)
-        print(f"\n{user}, your latest streak is {streak} days {'and is active!' if active else 'but is inactive.'}")
+        if active is True:
+            status = "active"
+            statement = f"{user}, congratulations on an active streak of {streak} days!"
+        elif active is None:
+            status = "?"
+            statement = f"{user}, are you ready to extend your {streak}-day streak?"
+        elif active is False:
+            status = "inactive"
+            statement = f"{user}, are you ready to start a new streak? Consistent practice is key to learning"
+        print(f"\n{statement}")
 
     def streak(self, user: str) -> int:
         """Return the number of consecutive days users have been active at least 85% of days."""
@@ -84,8 +93,10 @@ class Leaderboard:
         today = datetime.today().date()
         yesterday = today - timedelta(days=1)
 
-        if today in unique_dates or yesterday in unique_dates: 
+        if today in unique_dates: 
             active = True
+        elif yesterday in unique_dates:
+            active = None
         else:
             active = False 
 
@@ -107,7 +118,7 @@ class Leaderboard:
             else:
                 break  # Exit if the condition fails
 
-        if today in unique_dates:
+        if today in unique_dates or yesterday in unique_dates:
             streak += 1 # Because one diff is two days, the others one day
 
         return streak, active
@@ -175,7 +186,7 @@ class Leaderboard:
         for leader in all_time_leaders:
             days, active = self.streak(leader['user'])
             leader['streak'] = days
-            leader['active'] = 'Active' if active else 'Inactive'
+            leader['active'] = 'Active' if active else ('Inactive' if active is False else '?')
             all_time_leaders_enhanced.append(leader)
         
         # Sort by total points in descending order
