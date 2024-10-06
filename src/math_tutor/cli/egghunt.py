@@ -1,7 +1,5 @@
 import time
-from random import sample, shuffle
-from copy import deepcopy
-from math_tutor.core.factlibrary import FactLibrary, MultiplicationFactLibrary, AdditionFactLibrary, SubtractionFactLibrary, DivisionFactLibrary
+from math_tutor.core.factlibrary import MultiplicationFactLibrary, AdditionFactLibrary, SubtractionFactLibrary, DivisionFactLibrary
 from math_tutor.logs.leaderboard import Leaderboard
 from math_tutor.cli.utils import UserChoiceList, UserChoiceDict 
 
