@@ -107,7 +107,7 @@ class Leaderboard:
             else:
                 break  # Exit if the condition fails
 
-        if streak > 0:
+        if today in unique_dates:
             streak += 1 # Because one diff is two days, the others one day
 
         return streak, active
@@ -126,7 +126,7 @@ class Leaderboard:
         """Display the leaderboard for a specific user in a user-friendly table format."""
         if len(user) == 0 or user is None:
             leaderboard = self.get_leaderboard()
-        elif len(fact_type) == 0 or fact_type is None:
+        elif fact_type is None or len(fact_type) == 0:
             leaderboard = self.get_leaderboard_by_user(user)
         else:
             leaderboard = self.get_leaderboard_by_user_and_fact_type(user, fact_type)
@@ -169,22 +169,32 @@ class Leaderboard:
 
         # Convert to a list of dictionaries for easier sorting and display
         all_time_leaders = [{'user': user, 'total_points': points} for user, points in points_leaders.items()]
+
+        # Get user streaks
+        all_time_leaders_enhanced = []
+        for leader in all_time_leaders:
+            days, active = self.streak(leader['user'])
+            leader['streak'] = days
+            leader['active'] = 'Active' if active else 'Inactive'
+            all_time_leaders_enhanced.append(leader)
         
         # Sort by total points in descending order
-        return sorted(all_time_leaders, key=lambda x: x['total_points'], reverse=True)
+        return sorted(all_time_leaders_enhanced, key=lambda x: x['total_points'], reverse=True)
 
     def display_all_time_leaders(self):
         """Display all-time points leaders in a user-friendly table format."""
         all_time_leaders = self.get_all_time_leaders()
 
-        print(f"\n{'Rank':<5} {'User':<15} {'Total Points':<15}")
-        print("-" * 40)
+        print(f"\n{'Rank':<5} {'User':<15} {'Total Points':<15} {'Streak':<9} {'Status':<8}")
+        print("-" * 57)
         total = 0
+        power_streak = 0
         for rank, entry in enumerate(all_time_leaders, start=1):
-            print(f"{rank:<5} {entry['user']:<15} {entry['total_points']:<15}")
+            print(f"{rank:<5} {entry['user']:<15} {entry['total_points']:<15} {entry['streak']:<9} {entry['active']:<8}")
             total += entry['total_points']
-        print("-"*40)
-        print(f"{" ":<5} {'Total':<15} {total:<15}")
+            power_streak += entry['streak']
+        print("-" * 57)
+        print(f"{" ":<5} {'Total':<15} {total:<15} {power_streak:<9}")
 
     def get_personal_bests(self, user: str) -> List[Dict]:
         """Return personal bests for the specified user."""
