@@ -1,4 +1,5 @@
 egghunt_leaders.json
+history.json
 *.egg-info
 
 # Ignore Python cache directories
