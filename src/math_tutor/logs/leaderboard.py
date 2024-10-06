@@ -5,16 +5,13 @@ import os
 
 def main(user=None):
     leaderboard = Leaderboard('egghunt_leaders.json')
-    leaderboard.display_all_time_leaders()
-    if user is None:
-        user = input("Enter a user name for personal bests: ")
-    leaderboard.display_personal_bests_by_fact_type(user)
-    leaderboard.display_leaderboard_by_user(user)
+    leaderboard.user_dashboard(user)
 
 class Leaderboard:
-    def __init__(self, filename: str):
+    def __init__(self, filename: str, user=None):
         self.filename = filename
         self.leaderboard_data = self.load()
+        self.user = user
 
     def load(self) -> List[Dict]:
         """Load leaderboard data from the JSON file."""
@@ -53,36 +50,31 @@ class Leaderboard:
     @property
     def users(self) -> List:
         return list(set([entry['user'] for entry in self.leaderboard_data]))
+    
+    def user_dashboard(self, user=None, fact_type=None):
+        self.display_all_time_leaders()
+        user = user or input("Enter a user name for personal bests: ")
+        self.display_streak(user)
+        self.display_leaderboard(user=user, fact_type=fact_type)
+        self.display_personal_bests_by_fact_type(user)
 
     def get_leaderboard(self) -> List[Dict]:
         """Return the leaderboard data sorted by feathers."""
         return sorted(self.leaderboard_data, key=lambda x: x['feathers'], reverse=True)
 
-    def display_leaderboard(self):
-        """Display the leaderboard in a user-friendly table format."""
-        leaderboard = self.get_leaderboard()
-
-        # Prepare for ranking
-        current_rank = 0
-        last_score = None
-
-        print(f"\n{'Rank':<5} {'User':<15} {'Feathers':<10} {'Level':<10} {'Fact Type':<20} {'Timestamp':<25}")
-        print("-" * 91)
-
-        for idx, entry in enumerate(leaderboard):
-            if entry['feathers'] != last_score:
-                current_rank = idx + 1  # Rank starts from 1
-                last_score = entry['feathers']
-            
-            # Print the entry using the dictionary
-            print(f"{current_rank:<5} {entry['user']:<15} {entry['feathers']:<10} {entry['level']:<10} {entry.get('fact_type', 'N/A'):<20} {entry.get('timestamp', 'N/A'):<25}")
+    def display_streak(self, user: str):
+        streak, active = self.streak(user)
+        print(f"\n{user}, your latest streak is {streak} days {'and is active!' if active else 'but is inactive.'}")
 
     def streak(self, user: str) -> int:
         """Return the number of consecutive days users have been active at least 85% of days."""
+        if user is None:
+            return 0, False
+
         user_data = [entry for entry in self.leaderboard_data if entry['user'] == user]
         
         if not user_data:
-            return 0  # No data for the user
+            return 0, False  # No data for the user
 
         # Extract timestamps and convert to dates
         dates = [datetime.fromisoformat(entry['timestamp']).date() for entry in user_data]
@@ -125,12 +117,21 @@ class Leaderboard:
         user_data = [entry for entry in self.leaderboard_data if entry['user'] == user]
         return sorted(user_data, key=lambda x: x['feathers'], reverse=True)[:10]
 
-    def display_leaderboard_by_user(self, user: str):
-        """Display the leaderboard for a specific user in a user-friendly table format."""
-        leaderboard = self.get_leaderboard_by_user(user)
+    def get_leaderboard_by_user_and_fact_type(self, user: str, fact_type: str) -> List[Dict]:
+        """Return the leaderboard data for a specific user sorted by feathers."""
+        user_data = [entry for entry in self.leaderboard_data if entry['user'] == user and entry['fact_type'] == fact_type]
+        return sorted(user_data, key=lambda x: x['feathers'], reverse=True)[:10]
 
+    def display_leaderboard(self, user: str=None, fact_type: str=None):
+        """Display the leaderboard for a specific user in a user-friendly table format."""
+        if len(user) == 0 or user is None:
+            leaderboard = self.get_leaderboard()
+        elif len(fact_type) == 0 or fact_type is None:
+            leaderboard = self.get_leaderboard_by_user(user)
+        else:
+            leaderboard = self.get_leaderboard_by_user_and_fact_type(user, fact_type)
         if not leaderboard:
-            print(f"No data found for user: {user}")
+            print(f"No data found for user: {user} or any user. Are you running from the usual directory?")
             return
 
         # Prepare for ranking

@@ -13,9 +13,8 @@ def main():
     if user == 'New User!':
         user = input("\nWhat's your name? ").title()
 
-    streak, active = leaderboard.streak(user)
-    print(f"\nYour latest streak is {streak} days {'and is active!' if active else 'but is inactive.'}")
-
+    leaderboard.display_streak(user)
+    
     print("\nWhat kind of math facts?")
     fact_library_choices = {
             'addition (+)': AdditionFactLibrary,
@@ -69,7 +68,7 @@ def main():
 
     print(f"\nYou earned {round(sum(points))} feathers! Excellent! Feathers were awarded based on correctness, complexity, and speed.")
     leaderboard.add_entry(user, round(sum(points)), max_operand, fact_type)
-    leaderboard.main(user)
+    leaderboard.user_dashboard(user, fact_type)
 
 if __name__ == "__main__":
     main()
