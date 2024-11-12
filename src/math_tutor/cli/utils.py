@@ -1,5 +1,5 @@
 from typing import Union, Tuple, List, Dict
-
+from time import sleep
 
 class UserChoiceBase:
     def __init__(self, options: Union[Dict[str, str], List[str]]):
@@ -87,6 +87,17 @@ class UserChoiceList(UserChoiceBase):
         """Return the selected option."""
         selected_option = self.get_displayable_options()[choice - 1]
         return selected_option
+
+
+def count_down(delay=3):
+    print(' ....', end='')
+    delay = max(1, round(delay))
+    for countdown in range(delay):
+        print(delay - countdown, end='', flush=True)
+        for subcount in range(4):
+            print('.', end='', flush=True)
+            sleep(0.25)
+    print('GO!')
 
 # Example usage
 # options_dict = {'Option 1': 'Description 1', 'Option 2': 'Description 2'}
