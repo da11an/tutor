@@ -1,14 +1,17 @@
 import time
+from math_tutor.cli import egghunt_banner
 from math_tutor.core.mathfacts import MathFact
 from math_tutor.core.factlibrary import MultiplicationFactLibrary, AdditionFactLibrary, SubtractionFactLibrary, DivisionFactLibrary
 from math_tutor.logs.leaderboard import Leaderboard
 from math_tutor.logs.historian import Historian
-from math_tutor.cli.utils import UserChoiceList, UserChoiceDict, UserChoiceIntRange
+from math_tutor.cli.utils import UserChoiceList, UserChoiceDict, count_down
 
 leaderboard = Leaderboard("egghunt_leaders.json")
 history = Historian("history.json")
 
 def main():
+    egghunt_banner()
+
     print("Hi! My name is Diddio! Let's hunt for hidden easter eggs.")
 
     print("\nWhat's your name?")
@@ -30,13 +33,18 @@ def main():
         }
     fact_type, fact_library_class = UserChoiceDict(fact_library_choices).get_choice()
 
-    print("")
-    max_operand = UserChoiceIntRange(1, 1000, f"{fact_type.title()} max level").get_choice()
+    operator = fact_type.split('(')[1].split(')')[0]
+    suggested_max_operand = history.suggest_level(user=user, operator=operator)
+    print(f"\nYou are ready for level {suggested_max_operand}!")
+    max_operand = suggested_max_operand
 
     print(f"\nHi {user}! Here's how it works. I have baskets of {fact_type} problems.")
     print("(Don't you?!) Each basket should only have matching problems that are equal.")
     print("But I accidentally dropped in an extra problem that doesn't match.")
     print("Your job is to find the one that doesn't belong and tell me what it equals.")
+    print(f"\nEnter the answer to the problem that is different than the others ", end='')
+    count_down(5)
+
     min_operands = {'addition (+)': 1, 'subtraction (-)': 1, 'multiplication (x)': 2, 'division (/)': 2}
     min_operand = min_operands[fact_type]
     points = []
@@ -56,7 +64,9 @@ def main():
         basket.append(bad_egg)
         basket.shuffle()
 
-        input(f"\n-- Press ENTER to inspect 'basket' {i+1}/10 -- Feathers: {round(sum(points))} --\n")
+        print(f"\n({i+1}) +{round(points[-1]) if len(points) > 0 else 0} feathers", end='')
+        count_down(delay=3)
+        print("")
         basket.print_problems
         print("")
         bad_egg.quiz(show_problem=False, user=user)
@@ -81,6 +91,8 @@ def main():
     print(f"\nYou earned {round(sum(points))} feathers! Excellent! Feathers were awarded based on correctness, complexity, and speed.")
     leaderboard.add_entry(user, round(sum(points)), max_operand, fact_type)
     leaderboard.user_dashboard(user, fact_type)
+    history.load()
+    print(f"You're ready for level: {history.suggest_level(user=user, operator=operator)}")
 
 if __name__ == "__main__":
     main()
