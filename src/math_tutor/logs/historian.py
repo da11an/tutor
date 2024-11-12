@@ -68,7 +68,32 @@ class Historian:
         
         return sorted(problems, key=lambda k: problems[k]['wrong_rate'], reverse=True)
 
+    def report_card(self, user):
+        user_history = [entry for entry in self.history if entry['user'] == user]
+        user_digest = [(entry['problem'].split(), entry['correct']) for entry in user_history]
+        summary = {}
+        for problem, correctness in user_digest:
+            operand = (problem[0], problem[2])
+            operator = problem[1]
+            for oper in operand:
+                if operator not in summary:
+                    summary[operator] = {}
+                if oper not in summary[operator]:
+                    summary[operator][oper] = {'rate': 0, 'count': 0}
+                item = summary[operator][oper]
+                summary[operator][oper] = {'rate': (item['rate'] * item['count'] + correctness) / (item['count'] + 1), 'count': item['count'] + 1}
+        return summary
+    # TODO: handle division, maybe subtraction more parallel to addition, multiplication
 
+    def suggest_level(self, user, operator='+', min_rate=0.9, max_level=15):
+        card = self.report_card(user)
+        for level in range(2, max_level):
+            try:
+                if card[operator][str(level)]['rate'] < min_rate:
+                    break
+            except:
+                return level
+        return level
 
     @property
     def users(self) -> List:
