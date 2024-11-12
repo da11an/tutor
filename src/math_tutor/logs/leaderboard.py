@@ -2,6 +2,8 @@ import json
 from datetime import datetime, timedelta
 from typing import List, Dict
 import os
+import statistics
+from collections import OrderedDict
 
 def main(user=None):
     leaderboard = Leaderboard('egghunt_leaders.json')
@@ -275,6 +277,26 @@ class Leaderboard:
         else:
             print(f"\nNo entries found for {user}.")
 
+    def get_competence_by_user(self, user: str):
+        """Tally median score for each fact type and level for a user"""
+        
+        competence = {'addition (+)': {}, 'subtraction (-)': {}, 'multiplication (x)': {}, 'division (/)': {}}
+        
+        for entry in self.leaderboard_data:
+            if entry['user'] == user:
+                if competence[entry['fact_type']].get(entry['level']) is None:
+                    competence[entry['fact_type']][entry['level']] = [entry['feathers']]
+                else:
+                    competence[entry['fact_type']][entry['level']] = competence[entry['fact_type']][entry['level']] + [entry['feathers']]
+        
+        for fact_type in competence:
+            for level in competence[fact_type]:
+                competence[fact_type][level] = statistics.median(competence[fact_type][level])
+        
+        for item in competence:
+            competence[item] = dict(sorted(competence[item].items()))
+        
+        return competence
 
 if __name__ == "__main__":
     main()
