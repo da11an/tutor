@@ -19,10 +19,16 @@ def main():
     if user == 'New User!':
         user = input("\nWhat's your name? ").title()
 
-    leaderboard.display_streak(user)
+    if len(history.challenge_problems(user)) > 0:
+        print(f"\nHi {user}, let's review some challenge problems:")
+        [MathFact.from_problem(problem).quiz(user=user) for problem in history.challenge_problems(user)[:3]]
+    history.load()
 
-    print("\nLet's review some challenge problems:")
-    [MathFact.from_problem(problem).quiz(user=user) for problem in history.challenge_problems(user)[:3]]
+    print(f"\nHere's how the next part works. I have baskets of math problems.")
+    print("But one problem got dropped in that has a different answer than the others.")
+    print(f"\nEnter the answer to the problem that is different than the others ", end='')
+
+    leaderboard.display_streak(user)
     
     print("\nWhat kind of math facts?")
     fact_library_choices = {
@@ -37,13 +43,6 @@ def main():
     suggested_max_operand = history.suggest_level(user=user, operator=operator)
     print(f"\nYou are ready for level {suggested_max_operand}!")
     max_operand = suggested_max_operand
-
-    print(f"\nHi {user}! Here's how it works. I have baskets of {fact_type} problems.")
-    print("(Don't you?!) Each basket should only have matching problems that are equal.")
-    print("But I accidentally dropped in an extra problem that doesn't match.")
-    print("Your job is to find the one that doesn't belong and tell me what it equals.")
-    print(f"\nEnter the answer to the problem that is different than the others ", end='')
-    count_down(5)
 
     min_operands = {'addition (+)': 1, 'subtraction (-)': 1, 'multiplication (x)': 2, 'division (/)': 2}
     min_operand = min_operands[fact_type]
@@ -76,23 +75,25 @@ def main():
 
         points.append(feathers)
         if p.correct:
-            print(f"\n    Good! {bad_egg.problem} = {bad_egg.answer}")
+            print(f"\n    Good! {bad_egg.problem} = {int(bad_egg.answer)}")
         else:
             print(f"\n    Try that again:\n")
             bad_egg.quiz(show_problem=True, user=user)
             if not bad_egg.performance.correct:
-                print(f"\n    No: {bad_egg.problem} = {bad_egg.answer}")
+                print(f"\n    No: {bad_egg.problem} = {int(bad_egg.answer)}")
                 time.sleep(3)
             else:
-                print(f"\n    Good! {bad_egg.problem} = {bad_egg.answer}")
+                print(f"\n    Good! {bad_egg.problem} = {int(bad_egg.answer)}")
                 points.append(1)
 
-
-    print(f"\nYou earned {round(sum(points))} feathers! Excellent! Feathers were awarded based on correctness, complexity, and speed.")
+    earnings = f"You earned {round(sum(points))} feathers!"
+    print("\n+-", "-" * len(earnings), "-+", sep="")
+    print("| ", earnings, " |", sep="")
+    print("+-", "-" * len(earnings), "-+", sep="")
     leaderboard.add_entry(user, round(sum(points)), max_operand, fact_type)
-    leaderboard.user_dashboard(user, fact_type)
+    leaderboard.user_overview(user, fact_type)
     history.load()
-    print(f"You're ready for level: {history.suggest_level(user=user, operator=operator)}")
+    history.report_levels(user)
 
 if __name__ == "__main__":
     main()
