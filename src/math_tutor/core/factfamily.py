@@ -56,8 +56,7 @@ class FactFamily:
         return new_instance
 
     def sample_fact(self, k) -> 'MathFact':
-        return sample(self._facts, 1)[0]
-
+        return deepcopy(sample(self._facts, 1)[0])
 
     def shuffle(self):
         shuffle(self._facts)
@@ -68,7 +67,8 @@ class FactFamily:
 
     @property
     def print_problems(self) -> str:
-        print('    ' + '       '.join(self.problems))
+        for problem in self.problems:
+            print('      ', problem)
 
     @property
     def len(self) -> int:
@@ -106,17 +106,17 @@ class SubtractionFactFamily(FactFamily):
         super().__init__(value, min_operand, max_operand)  # Initialize the base class
         self._facts = facts if facts is not None else self.generate_facts()
         
-    def generate_facts(self) -> List[AdditionFact]:
+    def generate_facts(self) -> List[SubtractionFact]:
         """
         Generate all subtraction facts that relate to the given difference and subtracted number.
         """
         facts = []
 
-        for b in range(1, self.value):
-            a = self.value + b  # Calculate b to satisfy a + b = self.value
+        for b in range(1, self.value + 1):
+            a = self.value + b
             if self.max_operand is None or (a <= self.max_operand and b <= self.max_operand):
                 if self.min_operand is None or (a >= self.min_operand and b >= self.min_operand):
-                    facts.append(SubtractionFact(a, b))  # Assuming AdditionFact is a defined class
+                    facts.append(SubtractionFact(a, b))
  
         return facts
 
