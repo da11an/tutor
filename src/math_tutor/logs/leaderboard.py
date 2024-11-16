@@ -60,6 +60,10 @@ class Leaderboard:
         self.display_leaderboard(user=user, fact_type=fact_type)
         self.display_personal_bests_by_fact_type(user)
 
+    def user_overview(self, user=None, fact_type=None):
+        self.display_all_time_leaders()
+        user = user or input("Enter a user name for personal bests: ")
+
     def get_leaderboard(self) -> List[Dict]:
         """Return the leaderboard data sorted by feathers."""
         return sorted(self.leaderboard_data, key=lambda x: x['feathers'], reverse=True)
