@@ -7,7 +7,8 @@ from math_tutor.data import Performance
 class Historian:
     def __init__(self, filename: str):
         self.filename = filename
-        self.history = self.load()
+        self.history = []
+        self.load()
 
     def load(self) -> List[Dict]:
         """Load leaderboard data from the JSON file."""
@@ -16,7 +17,7 @@ class Historian:
 
         try:
             with open(self.filename, 'r') as file:
-                return json.load(file)
+                self.history = json.load(file)
         except (json.JSONDecodeError, IOError):
             return []  # Return empty list if JSON is invalid or another IOError occurs
 
@@ -75,25 +76,34 @@ class Historian:
         for problem, correctness in user_digest:
             operand = (problem[0], problem[2])
             operator = problem[1]
-            for oper in operand:
-                if operator not in summary:
-                    summary[operator] = {}
-                if oper not in summary[operator]:
-                    summary[operator][oper] = {'rate': 0, 'count': 0}
-                item = summary[operator][oper]
-                summary[operator][oper] = {'rate': (item['rate'] * item['count'] + correctness) / (item['count'] + 1), 'count': item['count'] + 1}
+            oper = max(operand)
+            if operator not in summary:
+                summary[operator] = {}
+            if oper not in summary[operator]:
+                summary[operator][oper] = {'rate': 0, 'count': 0}
+            item = summary[operator][oper]
+            summary[operator][oper] = {'rate': (item['rate'] * item['count'] + correctness) / (item['count'] + 1), 'count': item['count'] + 1}
         return summary
     # TODO: handle division, maybe subtraction more parallel to addition, multiplication
 
     def suggest_level(self, user, operator='+', min_rate=0.9, max_level=15):
+        min_level = {'+': 2, '-': 4, 'x': 3, '/': 4}
         card = self.report_card(user)
-        for level in range(2, max_level):
+        for level in range(min_level[operator], max_level):
             try:
                 if card[operator][str(level)]['rate'] < min_rate:
                     break
             except:
                 return level
         return level
+
+    def report_levels(self, user=None, min_rate=0.9, max_level=15):
+        user = user or input("Enter a user name for personal bests: ")
+        print(f"\n{'Operator':<10} {'Level':<7}")
+        print("-" * 28)
+        for operator in ('+', '-', 'x', '/'):
+            level = self.suggest_level(user, operator, min_rate, max_level)
+            print(f"       {operator:<3} {level:<7}")
 
     @property
     def users(self) -> List:
