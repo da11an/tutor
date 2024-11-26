@@ -200,18 +200,21 @@ class Leaderboard:
 
     def display_all_time_leaders(self):
         """Display all-time points leaders in a user-friendly table format."""
-        all_time_leaders = self.get_all_time_leaders()
+        try:
+            all_time_leaders = self.get_all_time_leaders()
 
-        print(f"\n{'Rank':<5} {'User':<15} {'Total Points':<15} {'Streak':<9} {'Status':<8}")
-        print("-" * 57)
-        total = 0
-        power_streak = 0
-        for rank, entry in enumerate(all_time_leaders, start=1):
-            print(f"{rank:<5} {entry['user']:<15} {entry['total_points']:<15} {entry['streak']:<9} {entry['active']:<8}")
-            total += entry['total_points']
-            power_streak += entry['streak']
-        print("-" * 57)
-        print(f"{" ":<5} {'Total':<15} {total:<15} {power_streak:<9}")
+            print(f"\n{'Rank':<5} {'User':<15} {'Total Points':<15} {'Streak':<9} {'Status':<8}")
+            print("-" * 57)
+            total = 0
+            power_streak = 0
+            for rank, entry in enumerate(all_time_leaders, start=1):
+                print(f"{rank:<5} {entry['user']:<15} {entry['total_points']:<15} {entry['streak']:<9} {entry['active']:<8}")
+                total += entry['total_points']
+                power_streak += entry['streak']
+            print("-" * 57)
+            print(f"{' ':<5} {'Total':<15} {total:<15} {power_streak:<9}")
+        except:
+            print("Ready to start making records?")
 
     def get_personal_bests(self, user: str) -> List[Dict]:
         """Return personal bests for the specified user."""
